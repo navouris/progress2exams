@@ -1,11 +1,24 @@
-# NMA June 2020 v 0.1
+# NMA June 2020 v 0.2 windows enabled
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
 import os
 import webbrowser
 import json
 import checkExams
-# webbrowser.open('mailto:', new=1)
+import sys
+
+# https://stackoverflow.com/questions/60937345/how-to-set-up-relative-paths-to-make-a-portable-exe-build-in-pyinstaller-with-p
+def resource_path(path):
+    if getattr(sys, "frozen", False):
+        # If the 'frozen' flag is set, we are in bundled-app mode!
+        resolved_path = os.path.abspath(os.path.join(sys._MEIPASS, path))
+    else:
+        # Normal development mode. Use os.getcwd() or __file__ as appropriate in your case...
+        resolved_path = os.path.abspath(os.path.join(os.getcwd(), path))
+
+    return resolved_path
+
+print("the home dir is ...", resource_path("."))
 
 class MyApp(tk.Tk):
     def __init__(self):
@@ -15,7 +28,7 @@ class MyApp(tk.Tk):
         self.title("checkExams v.1")
         self.state = "0"
         self.activeCourse = Course.loadCourses()
-        #print("loaded...", self.activeCourse.dir, self.activeCourse.progressFile)
+        # print("loaded...", self.activeCourse.dir, self.activeCourse.progressFile)
         if self.activeCourse: 
             loadingResult = checkExams.Enrolled.load(self.activeCourse.dir, self.activeCourse.progressFile) # load course data
             print("result=", loadingResult, "dir, progressFile ==", self.activeCourse.dir, self.activeCourse.progressFile)
@@ -24,11 +37,12 @@ class MyApp(tk.Tk):
         self.canvas = tk.Canvas(self, width= 1000, height=750)
         self.canvas.pack(expand=True)
         # bakcground images for different states
-        self.canvas.intro = tk.PhotoImage(file='./media/intro.gif')
-        self.canvas.menu = tk.PhotoImage(file='./media/menu.gif')
-        self.canvas.step1 = tk.PhotoImage(file='./media/step1.gif')
-        self.canvas.step2 = tk.PhotoImage(file='./media/step2.gif')
-        self.canvas.step3 = tk.PhotoImage(file='./media/step3.gif')
+        # self.canvas.intro = tk.PhotoImage(file= os.path.join(os.path.join(homedir, "media"), "intro.gif"))
+        self.canvas.intro = tk.PhotoImage(file= os.path.join(os.path.join(resource_path(""), "media"), "intro.gif"))
+        self.canvas.menu = tk.PhotoImage(file= os.path.join(os.path.join(resource_path(""), "media"), "menu.gif"))
+        self.canvas.step1 = tk.PhotoImage(file= os.path.join(os.path.join(resource_path(""), "media"), "step1.gif"))
+        self.canvas.step2 = tk.PhotoImage(file= os.path.join(os.path.join(resource_path(""), "media"), "step2.gif"))
+        self.canvas.step3 = tk.PhotoImage(file= os.path.join(os.path.join(resource_path(""), "media"), "step3.gif"))
         self.states = ["0", "m", "1", "2", "3"] # relate states to background images
         self.stateImages = {"0": self.canvas.intro, "m": self.canvas.menu, "1": self.canvas.step1, \
             "2": self.canvas.step2, "3": self.canvas.step3}
@@ -300,6 +314,10 @@ class Course:
         Course.theCourses.append(self)
         if self.active: Course.activeCourse = self
 
-if __name__ == "__main__":
+def main():
     window = MyApp()
     window.mainloop()
+
+if __name__ == "__main__":
+    main()
+
