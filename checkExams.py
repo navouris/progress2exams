@@ -39,14 +39,15 @@ class Enrolled:
         elif kind == "eligible":
             toShow = "  ΦΟΙΤΗΤΕΣ ΜΕ ΔΙΚΑΙΩΜΑ ΣΥΜΜΕΤΟΧΗΣ\n\n"
         else: return ""
-        toShow += "{: >8}\t{:}\n\n".format("AM", "ΕΠΩΝΥΜΟ, ΟΝΟΜΑ, email"+examsText)
+        toShow += " {:}\t{:}\n\n".format("ΕΠΩΝΥΜΟ, ΟΝΟΜΑ", "AM, email"+examsText)
         for s,S in sorted(Enrolled.students.items(), key= lambda x : x[1].name):
             if (kind == "not eligible" and not S.eligibility ) or (kind == "eligible" and S.eligibility):
-                toShow += "{: >8}\t{:}\t{}\n".format(S.am, S.name, S.email)
+                toShow += " {:}\t{:}\t{}\n".format(S.name, S.am, S.email)
                 if exams:
                     for exam in S.exams:
                         toShow += "\t"+":\t\t".join(list(exam))+"\n"
         toShow += "\n\n Συνολικά {} φοιτητές από {} που έχουν εγγραφεί στην εξέταση.".format(*Enrolled.count(kind)) 
+        if DEBUG: print("toshow=", toShow); input()
         return toShow
 
     @staticmethod
@@ -84,9 +85,11 @@ class Enrolled:
 
     @staticmethod
     def load(dir, progressFile):
-        # print(dir, progressFile)
-        # auxiliary function to find the AM of enrolled student
-        # TODO to make it more generic
+        if DEBUG: 
+            print("entering load....................", dir, progressFile); input()
+            print(dir, progressFile)
+        
+        #auxiliary function to find the AM of enrolled student
         def findAM(line):
             # for testing purposes...
             name = greek_to_upper(", ".join(line[:2]))
@@ -155,15 +158,17 @@ class Enrolled:
         # load their grades history if there are historic grades available (optional) and check eligibility
         Enrolled.loadHistoricGrades(dir)
         return True # successful loading
-    
-    # def checkEligibility():
 
 
+    @staticmethod
     def loadHistoricGrades(dir):
-        print("... γίνεται έλεγχος στα αρχεία: ", end = "")
+        theProgressFile = os.path.split(Enrolled.progressFile)[1]
+        if DEBUG: 
+            print("entering loadHistoricGrades.....", theProgressFile); input()
+            print("... γίνεται έλεγχος στα αρχεία: ", end = "")
         for f in os.listdir(dir):
             if f.endswith('xlsx') and not f.startswith(".") and not f.startswith("~"):
-                # print(f, end = ", ")
+                print(f, end = ", ")
                 fname = os.path.join(dir, f)
                 exam = f.strip(".xlsx")
                 workbook = xlrd.open_workbook(fname)
@@ -186,7 +191,8 @@ class Enrolled:
                         myAM = elm['Παλαιός ΑΜ'].strip() 
                     else: myAM = False
                     if myAM:
-                        if fname == Enrolled.progressFile:
+                        # print(myAM, f, theProgressFile, f==theProgressFile)
+                        if f == theProgressFile:
                             Enrolled.students[str(myAM)].eligibility = True
                         else:
                             Enrolled.students[str(myAM)].exams.append((exam, elm['Βαθμός']))  
@@ -199,17 +205,21 @@ class Enrolled:
         self.eligibility = None
         Enrolled.students[am] = self
     def __repr__(self):
-        out = " - ".join([self.name, self.am, self.email])+"\n"
+        elig = "ok" if self.eligibility else "NO"
+        out = " - ".join([self.name, self.am, self.email, elig])+"\n"
         for exam in self.exams:
             out += "\t"+":\t\t".join(list(exam))+"\n"
         return out
 
 if __name__ == "__main__":
     # TODO find the file of this exam
-    # dir = input("Δώστε τον φάκελο των ιστορικών αρχείων")
-    dir = "/Users/nma/Desktop/Grading-history/Ιστορικό βαθμολόγησης/Εισαγωγή στους Υπολογιστές"
-    # thisExamFileName = input("Δώστε το όνομα του αρχείου progress της εξέτασης (χωρίς κατάληξη .xlsx)")
-    thisExamFileName = "/Users/nma/Desktop/Grading-history/Ιστορικό βαθμολόγησης/Εισαγωγή στους Υπολογιστές/ECE_Υ103_Ιουν. 2020.xlsx"
+    dir = input("Δώστε τον φάκελο των ιστορικών αρχείων")
+    # dir = "/Users/nma/Desktop/Grading-history/Ιστορικό βαθμολόγησης/Εισαγωγή στους Υπολογιστές"
+    dir = r"C:\Users\Administrator\Desktop\web"
+    thisExamFileName = input("Δώστε το όνομα του αρχείου progress της εξέτασης")
+    # thisExamFileName = "/Users/nma/Desktop/Grading-history/Ιστορικό βαθμολόγησης/Εισαγωγή στους Υπολογιστές/ECE_Υ103_Ιουν. 2020.xlsx"
+    thisExamFileName = r"C:\Users\Administrator\Desktop\web\export_20200618015318.xlsx" 
+    
     Enrolled.load(dir, thisExamFileName)
     if DEBUG: 
         print("\n\n List of enrolled students .... ")
@@ -217,18 +227,20 @@ if __name__ == "__main__":
 
 
     print('\n\nNOT ELIGIBLE FOR THIS EXAM')
+    print(Enrolled.showStudents(exams=True))
 
-    count = 0
-    for st, S in Enrolled.students.items(): 
-        if not S.eligibility: print(S);count += 1
-    print("Σύνολο =", count)
+    # count = 0
+    # for st, S in Enrolled.students.items(): 
+    #     if not S.eligibility: print(S);count += 1
+    # print("Σύνολο =", count)
 
-    print(' ELIGIBLE FOR THIS EXAM')
-    count = 0
-    for st, S in Enrolled.students.items(): 
-        if S.eligibility: print(S);count += 1
+    print('\n\nELIGIBLE FOR THIS EXAM')
+    print(Enrolled.showStudents(kind="eligible", exams=True))
+    # count = 0
+    # for st, S in Enrolled.students.items(): 
+    #     if S.eligibility: print(S);count += 1
 
-    print("Σύνολο =", count)
+    print("Σύνολο =", Enrolled.count())
 
     
 

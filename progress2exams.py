@@ -12,12 +12,13 @@ class MyApp(tk.Tk):
         tk.Tk.__init__(self)
         self.backgrColor = "#40423f"
         self.borderColor = "#f5b53f"
-        self.title("checkExams")
+        self.title("checkExams v.1")
         self.state = "0"
         self.activeCourse = Course.loadCourses()
+        print("loaded...", self.activeCourse.dir, self.activeCourse.progressFile)
         if self.activeCourse: 
             loadingResult = checkExams.Enrolled.load(self.activeCourse.dir, self.activeCourse.progressFile) # load course data
-            print("result=", loadingResult)
+            print("result=", loadingResult, "dir, progressFile ==", self.activeCourse.dir, self.activeCourse.progressFile)
         else: loadingResult = False
         if self.activeCourse: print(self.activeCourse.name)
         self.canvas = tk.Canvas(self, width= 1000, height=750)
@@ -157,7 +158,7 @@ class MyApp(tk.Tk):
         self.menu = tk.Frame(self.fStudent, relief = "groove")
         self.menu.pack(expand=1, fill='both', padx=2, pady=2)
         tk.Label(self.menu, bg=self.backgrColor, fg=self.borderColor, borderwidth=2, text="     Στοιχεία φοιτητών   ", \
-                font="Consolas 30").pack(expand=1, fill="both", side="left")
+                font="Consolas 26").pack(expand=1, fill="both", side="left")
         self.menuButton = tk.Label(self.menu, bg=self.backgrColor, borderwidth=5, fg=self.borderColor, text=" [x] ", font="Consolas 30", width=30)
         self.menuButton.pack(expand=1, fill="both", side="right")
         self.menuButton.bind("<1>", self.removeDataDisplay)
@@ -166,7 +167,7 @@ class MyApp(tk.Tk):
         self.renderItems.append(self.canvas.create_window(400,0, window= self.fStudent, anchor='nw', width=600, height=750, tags="window")) #παράθυρο μέσα στον καμβά
         self.showStudents = tk.Text(self.data, bg=self.backgrColor)
         self.showStudents.pack(expand=1, fill="both", padx=2, pady=2 )
-        self.showStudents.config(font="Consolas 16", fg="white", spacing1=5)
+        self.showStudents.config(font="Consolas 12", fg="white", spacing1=5)
         self.shownContent = checkExams.Enrolled.showStudents(kind = kind, exams=exams)
         self.showStudents.insert(1.0, self.shownContent)
 
