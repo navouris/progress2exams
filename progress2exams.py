@@ -15,7 +15,7 @@ class MyApp(tk.Tk):
         self.title("checkExams v.1")
         self.state = "0"
         self.activeCourse = Course.loadCourses()
-        print("loaded...", self.activeCourse.dir, self.activeCourse.progressFile)
+        #print("loaded...", self.activeCourse.dir, self.activeCourse.progressFile)
         if self.activeCourse: 
             loadingResult = checkExams.Enrolled.load(self.activeCourse.dir, self.activeCourse.progressFile) # load course data
             print("result=", loadingResult, "dir, progressFile ==", self.activeCourse.dir, self.activeCourse.progressFile)
