@@ -52,13 +52,13 @@ class Enrolled:
 
     @staticmethod
     def count(kind = "not eligible"):
+        count, total = 0, 0
         if Enrolled.students:
-            count = 0
             for s,S in Enrolled.students.items():
                 if kind == "not eligible" and not S.eligibility: count += 1
                 elif kind == "eligible" and S.eligibility: count += 1
-            return count, len(Enrolled.students) 
-        else: False, False
+            total = len(Enrolled.students) 
+        return count, total
 
     @staticmethod
     def findAmInFiles(name):
@@ -120,26 +120,23 @@ class Enrolled:
         try:
             files = os.listdir(dir)
         except: 
-            print('the dir given does not exist in file system')
-            return False
+            return 'O ορισμένος φάκελος δεν υπάρχει'
         if not files: 
-            print('no files in given dir')
-            return False
+            return 'Δεν υπάρχουν αρχεία στον φάκελο του μαθήματος'
         else:
             Enrolled.courseDir = dir
         if os.path.isfile(progressFile):
             Enrolled.progressFile = progressFile
         else:
-            print('progressFile not found')
-            return False
+            return'δεν βράθηκαν αρχεία από το progress στον ορισμένο φάκελο'
         
         f = [x for x in files if "_users" in x and not x.startswith(".")]
         if len(f)==1: 
             fname = f[0]
             Enrolled.examFile = os.path.join(dir, fname)
         else:
-            print('examFile not found')
-            return False # the exams file is missing ...
+            return 'Δεν βρέθηκε αρχείο από το exams στον ορισμένο φάκελο'
+            # the exams file is missing ...
         
         # print("\n".join([Enrolled.progressFile, Enrolled.examFile, Enrolled.courseDir]));input()
         
@@ -149,7 +146,7 @@ class Enrolled:
                 line = line.split("\t")
                 name = line[0]
                 surname = line[1]
-                if not "@upatras" in line[2]: email = line[2] # students do not have @upatras email
+                email = line[2]
                 am = findAM(line)
                 if am : Enrolled(greek_to_upper(", ".join(line[:2])), am, email)
         # for st in Enrolled.students: print(Enrolled.students[st])
@@ -157,7 +154,7 @@ class Enrolled:
 
         # load their grades history if there are historic grades available (optional) and check eligibility
         Enrolled.loadHistoricGrades(dir)
-        return True # successful loading
+        return "ok" # successful loading
 
 
     @staticmethod
@@ -168,7 +165,7 @@ class Enrolled:
             print("... γίνεται έλεγχος στα αρχεία: ", end = "")
         for f in os.listdir(dir):
             if f.endswith('xlsx') and not f.startswith(".") and not f.startswith("~"):
-                print(f, end = ", ")
+                if DEBUG: print(f, end = ", ")
                 fname = os.path.join(dir, f)
                 exam = f.strip(".xlsx")
                 workbook = xlrd.open_workbook(fname)
